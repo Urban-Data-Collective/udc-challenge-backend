@@ -1,0 +1,24 @@
+{
+  "name": "itw-server",
+  "version": "1.0.0",
+  "author": "Anthony Garcia <anthony.garcia@digicatapult.org.uk>",
+  "license": "MIT",
+  "private": true,
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node -r esm .",
+    "dev": "node -r esm ."
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "envalid": "^4.2.2",
+    "esm": "^3.2.18",
+    "express": "^4.16.4"
+  },
+  "devDependencies": {
+    "eslint": "^5.15.3",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "prettier": "^1.16.4"
+  }
+}
