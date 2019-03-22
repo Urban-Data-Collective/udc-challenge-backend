@@ -81,3 +81,23 @@ test('Cannot delete a running device', async t => {
 
   t.is(res.status, 422)
 })
+
+test('Wrong token show error', async t => {
+  const app = request(server)
+  const uuid = '15a916cc-a03f-4afd-80cf-d702b71549e4'
+  const res = await app
+    .delete(`/devices/${uuid}`)
+    .set('Authorization', `Bearer WRONGTOKEN`)
+
+  t.is(res.status, 401)
+  t.is(res.body.error, 'Invalid token')
+})
+
+test('No token show error', async t => {
+  const app = request(server)
+  const uuid = '15a916cc-a03f-4afd-80cf-d702b71549e4'
+  const res = await app.delete(`/devices/${uuid}`)
+
+  t.is(res.status, 401)
+  t.is(res.body.error, 'Authentication needed to access the resource')
+})
