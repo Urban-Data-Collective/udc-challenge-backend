@@ -41,7 +41,7 @@ const rooms = [
     floor: 9,
   },
 ]
-let devices = [
+const devices = [
   {
     uuid: '606ed577-3f0a-496d-b2bb-c0d90877623c',
     status: 'RUNNING',
@@ -141,7 +141,7 @@ app.get('/rooms', (req, res) => {
 })
 
 app.get('/devices', (req, res) => {
-  res.send(devices)
+  res.send(devices.filter(d => !d.deleted))
 })
 
 app.get('/devices/:uuid', (req, res) => {
@@ -192,7 +192,9 @@ app.delete('/devices/:uuid', authenticate, (req, res) => {
       }`,
     })
   }
-  devices = devices.filter(d => d.uuid === uuid)
+  device.deleted = true
+  device.room = null
+  res.sendStatus(204)
 })
 
 app.use(errorHandler)
