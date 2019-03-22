@@ -1,5 +1,7 @@
 import express from 'express'
 import cors from 'cors'
+import httpError from './httpError'
+import { authenticate, errorHandler } from './middlewares'
 
 const rooms = [
   {
@@ -114,6 +116,14 @@ let devices = [
 ]
 const allowedStatus = ['RUNNING', 'STARTING', 'STOPPED']
 
+function loadDevice(uuid) {
+  const device = devices.find(d => d.uuid === uuid)
+  if (!device) {
+    throw httpError(404, `Device ${uuid} not found`)
+  }
+  return device
+}
+
 const app = express()
 
 app.use(cors())
@@ -122,7 +132,7 @@ app.get('/rooms', (req, res) => {
   res.send(
     rooms.map(r => ({
       ...r,
-      devices: devices.filter(d => d.room === r).map(({ room, ...d }) => d),
+      devices: devices.filter(d => d.room === r),
     }))
   )
 })
@@ -133,14 +143,11 @@ app.get('/devices', (req, res) => {
 
 app.get('/devices/:uuid', (req, res) => {
   const { uuid } = req.params
-  const device = devices.find(d => d.uuid === uuid)
-  if (!device) {
-    return res.status(404).send({ error: `Device ${uuid} not found` })
-  }
+  const device = loadDevice(uuid)
   res.send(device)
 })
 
-app.post('/rooms/:uuid/devices', (req, res) => {
+app.post('/rooms/:uuid/devices', authenticate, (req, res) => {
   const roomUuid = req.params.uuid
   const deviceUuid = req.body && req.body.uuid
   if (!deviceUuid) {
@@ -150,10 +157,7 @@ app.post('/rooms/:uuid/devices', (req, res) => {
   if (!room) {
     return res.status(404).send({ error: `Roome ${roomUuid} not found` })
   }
-  const device = devices.find(d => d.uuid === deviceUuid)
-  if (!device) {
-    return res.status(404).send({ error: `Device ${deviceUuid} not found` })
-  }
+  const device = loadDevice(deviceUuid)
   if (room.devices.some(d => d.uuid === deviceUuid)) {
     return res.status(422).send({
       error: `Device ${deviceUuid} is already in room ${roomUuid} (${
@@ -164,25 +168,19 @@ app.post('/rooms/:uuid/devices', (req, res) => {
   room.devices.push(device)
 })
 
-app.put('/devices/:uuid/status', (req, res) => {
+app.put('/devices/:uuid/status', authenticate, (req, res) => {
   const status = req.body
   if (!allowedStatus.includes(status)) {
     return res.status(400).send({ error: `Status ${status} is not allowed` })
   }
   const { uuid } = req.params
-  const device = devices.find(d => d.uuid === uuid)
-  if (!device) {
-    return res.status(404).send({ error: `Device ${uuid} not found` })
-  }
+  const device = loadDevice(uuid)
   device.status = status
 })
 
-app.delete('/devices/:uuid', (req, res) => {
+app.delete('/devices/:uuid', authenticate, (req, res) => {
   const { uuid } = req.params
-  const device = devices.find(d => d.uuid === uuid)
-  if (!device) {
-    return res.status(404).send({ error: `Device ${uuid} not found` })
-  }
+  const device = loadDevice(uuid)
   if (device.status !== 'STOPPED') {
     return res.status(422).send({
       error: `Only stopped devices can be removed, but ${uuid} is ${
@@ -192,5 +190,7 @@ app.delete('/devices/:uuid', (req, res) => {
   }
   devices = devices.filter(d => d.uuid === uuid)
 })
+
+app.use(errorHandler)
 
 export default app
