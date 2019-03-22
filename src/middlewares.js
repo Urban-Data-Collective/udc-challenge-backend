@@ -6,7 +6,7 @@ export function authenticate(req, res, next) {
   const token =
     req.headers.authorization && req.headers.authorization.match(jwtHeader)
 
-  if (token !== 'MRBW6ZDFEBBGC43FGMZA') {
+  if (token[1] !== 'MRBW6ZDFEBBGC43FGMZA') {
     throw httpError(401, 'Invalid token')
   }
 

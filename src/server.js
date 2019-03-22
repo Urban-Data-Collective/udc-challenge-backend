@@ -1,5 +1,6 @@
 import express from 'express'
 import cors from 'cors'
+import bodyParser from 'body-parser'
 import httpError from './httpError'
 import { authenticate, errorHandler } from './middlewares'
 
@@ -114,7 +115,7 @@ let devices = [
     humidity: 0,
   },
 ]
-const allowedStatus = ['RUNNING', 'STARTING', 'STOPPED']
+const allowedStatus = ['RUNNING', 'STOPPED']
 
 function loadDevice(uuid) {
   const device = devices.find(d => d.uuid === uuid)
@@ -128,11 +129,13 @@ const app = express()
 
 app.use(cors())
 
+app.use(bodyParser.json())
+
 app.get('/rooms', (req, res) => {
   res.send(
     rooms.map(r => ({
       ...r,
-      devices: devices.filter(d => d.room === r),
+      devices: devices.filter(d => d.room === r).map(({ room, ...d }) => d),
     }))
   )
 })
@@ -169,13 +172,14 @@ app.post('/rooms/:uuid/devices', authenticate, (req, res) => {
 })
 
 app.put('/devices/:uuid/status', authenticate, (req, res) => {
-  const status = req.body
+  const status = req.body && req.body.status
   if (!allowedStatus.includes(status)) {
     return res.status(400).send({ error: `Status ${status} is not allowed` })
   }
   const { uuid } = req.params
   const device = loadDevice(uuid)
   device.status = status
+  res.send(device)
 })
 
 app.delete('/devices/:uuid', authenticate, (req, res) => {
