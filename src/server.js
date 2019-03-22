@@ -44,21 +44,24 @@ app.post('/rooms/:uuid/devices', authenticate, (req, res) => {
   const roomUuid = req.params.uuid
   const deviceUuid = req.body && req.body.uuid
   if (!deviceUuid) {
-    return res.status(400).send({ error: 'Expected device uuid' })
+    return res
+      .status(400)
+      .send({ error: 'Expected device uuid as part of the body' })
   }
   const room = rooms.find(r => r.uuid === roomUuid)
   if (!room) {
-    return res.status(404).send({ error: `Roome ${roomUuid} not found` })
+    return res.status(404).send({ error: `Room ${roomUuid} not found` })
   }
   const device = loadDevice(deviceUuid)
-  if (room.devices.some(d => d.uuid === deviceUuid)) {
+  if (device.room === room) {
     return res.status(422).send({
       error: `Device ${deviceUuid} is already in room ${roomUuid} (${
         room.label
       })`,
     })
   }
-  room.devices.push(device)
+  device.room = room
+  res.send(room)
 })
 
 app.put('/devices/:uuid/status', authenticate, (req, res) => {

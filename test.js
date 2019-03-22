@@ -101,3 +101,36 @@ test('No token show error', async t => {
   t.is(res.status, 401)
   t.is(res.body.error, 'Authentication needed to access the resource')
 })
+
+test('Can add device to room', async t => {
+  const app = request(server)
+  const roomUuid = '65345fbe-7bd1-4729-9cfe-eb74194f6163'
+  const deviceUuid = 'c77b56ae-e25e-4596-a273-150fd4295df7'
+  const res = await app
+    .post(`/rooms/${roomUuid}/devices`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ uuid: deviceUuid })
+
+  t.is(res.status, 200)
+  t.deepEqual(res.body, {
+    floor: 9,
+    label: 'Tim Barners-Lee',
+    uuid: '65345fbe-7bd1-4729-9cfe-eb74194f6163',
+  })
+})
+
+test('Cannot add device to room is already in', async t => {
+  const app = request(server)
+  const roomUuid = 'b84bdc5f-551e-4e2d-a382-2c0f743b6c78'
+  const deviceUuid = '606ed577-3f0a-496d-b2bb-c0d90877623c'
+  const res = await app
+    .post(`/rooms/${roomUuid}/devices`)
+    .set('Authorization', `Bearer ${token}`)
+    .send({ uuid: deviceUuid })
+
+  t.is(res.status, 422)
+  t.is(
+    res.body.error,
+    `Device ${deviceUuid} is already in room ${roomUuid} (Hedy Lamarr)`
+  )
+})
