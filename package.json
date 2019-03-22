@@ -7,7 +7,8 @@
   "main": "src/index.js",
   "scripts": {
     "start": "node -r esm .",
-    "dev": "node -r esm ."
+    "dev": "node -r esm .",
+    "test": "ava"
   },
   "dependencies": {
     "console-log-level": "^1.4.1",
@@ -17,9 +18,16 @@
     "express": "^4.16.4"
   },
   "devDependencies": {
+    "ava": "^1.3.1",
     "eslint": "^5.15.3",
     "eslint-config-prettier": "^4.1.0",
     "eslint-plugin-prettier": "^3.0.1",
-    "prettier": "^1.16.4"
+    "prettier": "^1.16.4",
+    "supertest": "^4.0.2"
+  },
+  "ava": {
+    "require": [
+      "esm"
+    ]
   }
 }
