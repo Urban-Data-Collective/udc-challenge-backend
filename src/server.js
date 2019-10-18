@@ -15,6 +15,14 @@ function loadDevice(uuid) {
   return device
 }
 
+function loadRoom(uuid) {
+  const room = rooms.find(r => r.uuid === uuid)
+  if (!room) {
+    throw httpError(404, `Room ${uuid} not found`)
+  }
+  return room
+}
+
 const app = express()
 
 app.use(cors())
@@ -22,12 +30,16 @@ app.use(cors())
 app.use(bodyParser.json())
 
 app.get('/rooms', (req, res) => {
-  res.send(
-    rooms.map(r => ({
-      ...r,
-      devices: devices.filter(d => d.room === r).map(({ room, ...d }) => d),
-    }))
-  )
+  res.send(rooms)
+})
+
+app.get('/rooms/:uuid', (req, res) => {
+  const { uuid } = req.params
+  const room = loadRoom(uuid)
+  res.send({
+    ...room,
+    devices: devices.filter(d => d.room === room).map(({ room, ...d }) => d),
+  })
 })
 
 app.get('/devices', (req, res) => {
