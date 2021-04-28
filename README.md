@@ -65,7 +65,7 @@ The endpoints listed below are only accessible after authentication with a `Bear
 ### Assign a device to a room
 
 ```
-POST /rooms/devices
+POST /rooms/<room-uuid>/devices
 ```
 Input:
 ```
@@ -75,7 +75,7 @@ Input:
 ### Update the status of a device
 
 ```
-PUT /devices/<uuid>/status
+PUT /devices/<device-uuid>/status
 ```
 Input:
 ```
@@ -87,5 +87,5 @@ Input:
 Only stopped devices can be removed.
 
 ```
-DELETE /devices/<uuid>
+DELETE /devices/<device-uuid>
 ```
